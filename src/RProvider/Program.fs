@@ -24,6 +24,8 @@ let startServer channelName tempFile =
 
   // Create an IPC channel that exposes RInteropServer instance
   let chan = new Ipc.IpcChannel(channelName)
+  Logging.logf "CommandLine: %s" Environment.CommandLine
+  Logging.logf "Current directory: %s" Environment.CurrentDirectory
   Logging.logf "Registering RInteropServer at channel '%s'" channelName
   ChannelServices.RegisterChannel(chan, false)
   let serviceEntry =

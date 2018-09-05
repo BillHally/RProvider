@@ -107,6 +107,8 @@ let getServer() =
     | None ->
         let serverInstance = startNewServer()
         lastServer <- Some serverInstance
+        Logging.logf "CommandLine: %s" Environment.CommandLine
+        Logging.logf "Current directory: %s" Environment.CurrentDirectory
         Logging.logf "Got some server"
         serverInstance )
 
