@@ -22,6 +22,8 @@ let rec asyncWaitForExit pid = async {
 /// contains the parent PID) and delete tempFile once we're running
 let startServer channelName tempFile =
 
+  RProvider.RDotNet.forceLoad () // Ensure the version of RDotNet we compiled against is the one loaded
+
   // Create an IPC channel that exposes RInteropServer instance
   let chan = new Ipc.IpcChannel(channelName)
   Logging.logf "CommandLine: %s" Environment.CommandLine
