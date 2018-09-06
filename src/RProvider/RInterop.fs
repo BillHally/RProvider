@@ -157,12 +157,14 @@ module internal RInteropInternal =
             // If there are multiple plugins registered, we arbitrarily use the "first"
             match mefContainer.Value.GetExports(interfaceType, null, null).FirstOrDefault() with                   
             // Nothing from MEF, try to find a built-in
-            | null ->   match toRConv.TryGetValue(vt) with
+            | null ->   Logging.logf "tryGetContainer: %s [NO MEF]" vt.AssemblyQualifiedName 
+                        match toRConv.TryGetValue(vt) with
                         | (true, conv) -> Some conv
                         | _ -> None
 
             // Use MEF converter
-            | conv ->   let convMethod = interfaceType.GetMethod("Convert")
+            | conv ->   Logging.logf "tryGetContainer: %s => MEF: %s" vt.AssemblyQualifiedName interfaceType.AssemblyQualifiedName
+                        let convMethod = interfaceType.GetMethod("Convert")
                         Some(fun engine value -> convMethod.Invoke(conv.Value, [| engine; value |]) :?> SymbolicExpression )
         
         match Seq.tryPick tryGetConverter (types concreteType) with
