@@ -7,6 +7,7 @@ open RProvider
 open RProvider.RInterop
 open RProvider.Internal
 open System
+open System.Reflection
 
 /// Event loop (see below) can either perform some work item or stop 
 type internal EventLoopMessage =
@@ -63,7 +64,12 @@ module internal EventLoop =
         match result.Value with
         | Choice1Of3() -> failwith "logic error: Item in the queue was not processed"
         | Choice2Of3 res -> res
-        | Choice3Of3 ex -> raise ex
+        | Choice3Of3 ex ->
+            match ex with
+            | :? ReflectionTypeLoadException as ex ->
+                Logging.logf "ERROR: %A" ex
+                ex.LoaderExceptions |> Array.iter (fun x -> Logging.logf "%A" x.Message)
+            raise ex
 
 
 /// Server object that is exposed via remoting and is called by the editor
