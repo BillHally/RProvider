@@ -16,12 +16,6 @@ open RProvider.Internal
 open RProvider.Internal.RInit
 open RProvider.Internal.Configuration
 
-module RDotNet =
-    /// Call this before plugins are loaded to ensure that the correct version of RDotNet is loaded
-    let forceLoad () =
-        // Force RDotNet assembly to load by using some functionality from it (it doesn't matter what)
-        Logging.logf "Forced load of RDotNet by referencing '%A'" RDotNet.Internals.Windows.UiMode.LinkDll
-
 /// This inteface can be used for providing new convertors that can convert
 /// custom .NET data types to R values. The converter is used whenever the
 /// user calls an R function (such as `R.foo(...)`) with an arguments that 
@@ -111,14 +105,26 @@ module internal RInteropInternal =
             /// original location, not the shadow-copied location.
             let assemblyLocation = assem |> getAssemblyLocation
 
-            let dirs = getProbingLocations()
-            let catalogs : seq<Primitives.ComposablePartCatalog> = 
-              seq { yield upcast new DirectoryCatalog(Path.GetDirectoryName assemblyLocation,"*.Plugin.dll")
+            let dirs = (Path.GetDirectoryName assemblyLocation)::(getProbingLocations())
+            let catalogs : seq<Primitives.ComposablePartCatalog> =
+              seq {
                     for d in dirs do
-                      yield upcast new DirectoryCatalog(d,"*.Plugin.dll")
+                      let catalog = new DirectoryCatalog(d, "*.Plugin.dll")
+                      let exports = catalog.Parts |> Seq.collect (fun x -> x.ExportDefinitions) |> Seq.toArray
+                      if exports.Length > 0 then
+                        Logging.logf "Catalog: %A (%A)" d catalog.LoadedFiles
+                        exports |> Array.iter (fun x -> Logging.logf "Export: %s" x.ContractName)
+                      yield upcast catalog
                     yield upcast new AssemblyCatalog(assem) }
-            new CompositionContainer(new AggregateCatalog(catalogs))
-                
+            let container = new CompositionContainer(new AggregateCatalog(catalogs))
+
+
+
+            container
+
+    let internal forceLoadPlugins () =
+        mefContainer.Force() |> ignore // TODO: Remove this?
+
     let internal toRConv = Collections.Generic.Dictionary<Type, REngine -> obj -> SymbolicExpression>()
 
     /// Register a function that will convert from a specific type to a value in R.
@@ -568,3 +574,10 @@ type REnv(fileName:string) =
   member x.Keys = 
     let ls = RInterop.callFunc "base" "ls" (namedParams ["envir", box env]) [||]
     ls.GetValue<string[]>()  
+
+module RDotNet =
+    /// Call this before plugins are loaded to ensure that the correct version of RDotNet is loaded
+    let forceLoad () =
+        // Force RDotNet assembly to load by using some functionality from it (it doesn't matter what)
+        Logging.logf "Forced load of RDotNet by referencing '%A'" RDotNet.Internals.Windows.UiMode.LinkDll
+        RInteropInternal.forceLoadPlugins()
