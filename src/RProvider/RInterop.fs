@@ -17,10 +17,12 @@ open RProvider.Internal.RInit
 open RProvider.Internal.Configuration
 
 module RDotNet =
+    // Force RDotNet assembly to load by using some functionality from it (it doesn't matter what)
+    let private __ = RDotNet.Internals.Windows.UiMode.LinkDll
+
     // Call this before plugins are loaded to ensure that the correct version of RDotNet is loaded
     let forceLoad () =
-        // Force RDotNet assembly to load by using some functionality from it (it doesn't matter what)
-        RDotNet.Internals.Windows.UiMode |> ignore
+        ()
 
 /// This inteface can be used for providing new convertors that can convert
 /// custom .NET data types to R values. The converter is used whenever the
