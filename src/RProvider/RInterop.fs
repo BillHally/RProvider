@@ -108,13 +108,19 @@ module internal RInteropInternal =
             let dirs = (Path.GetDirectoryName assemblyLocation)::(getProbingLocations())
             let catalogs : seq<Primitives.ComposablePartCatalog> =
               seq {
+                    Logging.logf "============================================================================================="
+                    Logging.logf "Loading plugins..."
+                    Logging.logf "============================================================================================="
                     for d in dirs do
                       let catalog = new DirectoryCatalog(d, "*.Plugin.dll")
                       let exports = catalog.Parts |> Seq.collect (fun x -> x.ExportDefinitions) |> Seq.toArray
                       if exports.Length > 0 then
+                        Logging.logf "---------------------------------------------------------------------------------------------"
                         Logging.logf "Catalog: %A (%A)" d catalog.LoadedFiles
-                        exports |> Array.iter (fun x -> Logging.logf "Export: %s" x.ContractName)
+                        exports |> Array.iter (fun x -> Logging.logf " Export: %s" x.ContractName)
+                        Logging.logf "---------------------------------------------------------------------------------------------"
                       yield upcast catalog
+
                     yield upcast new AssemblyCatalog(assem) }
             let container = new CompositionContainer(new AggregateCatalog(catalogs))
 
