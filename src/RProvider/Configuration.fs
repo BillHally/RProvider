@@ -50,6 +50,11 @@ let getProbingLocations() =
     else []
   with :? ConfigurationErrorsException | :? KeyNotFoundException -> []
 
+let private locations =
+  lazy
+    let locations = getProbingLocations()
+    Logging.logf "Probing locations:%s%s" Environment.NewLine (String.concat Environment.NewLine locations)
+    locations
 
 /// Given an assembly name, try to find it in either assemblies
 /// loaded in the current AppDomain, or in one of the specified 
@@ -77,10 +82,7 @@ let resolveReferencedAssembly (asmName:string) =
       let idx = asmName.IndexOf(',') 
       if idx > 0 then asmName.Substring(0, idx) else asmName
 
-    let locations = getProbingLocations()
-    Logging.logf "Probing locations: %s" (String.concat ";" locations)
-
-    let asm = locations |> Seq.tryPick (fun dir ->
+    let asm = locations.Value |> Seq.tryPick (fun dir ->
       let library = Path.Combine(dir, libraryName+".dll")
       if File.Exists(library) then
         Logging.logf "Found assembly, checking version! (%s)" library
