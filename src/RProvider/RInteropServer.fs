@@ -54,6 +54,13 @@ module internal EventLoop =
             try
               result := Choice2Of3(f())
             with ex -> 
+              match ex with
+              | :? ReflectionTypeLoadException as ex ->
+                Logging.logf "ERROR: 1: %A" ex
+                ex.LoaderExceptions |> Array.iter (fun x -> Logging.logf "%A" x.Message)
+              | ex -> 
+                Logging.logf "ERROR: 2: %A" ex
+
               let ex = 
                 if ex.GetType().IsSerializable then ex
                 else Exception(ex.Message)
@@ -64,12 +71,7 @@ module internal EventLoop =
         match result.Value with
         | Choice1Of3() -> failwith "logic error: Item in the queue was not processed"
         | Choice2Of3 res -> res
-        | Choice3Of3 ex ->
-            match ex with
-            | :? ReflectionTypeLoadException as ex ->
-                Logging.logf "ERROR: %A" ex
-                ex.LoaderExceptions |> Array.iter (fun x -> Logging.logf "%A" x.Message)
-            raise ex
+        | Choice3Of3 ex -> raise ex
 
 
 /// Server object that is exposed via remoting and is called by the editor
