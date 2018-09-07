@@ -53,7 +53,8 @@ let getProbingLocations() =
 let private locations =
   lazy
     let locations = getProbingLocations()
-    Logging.logf "Probing locations:%s%s" Environment.NewLine (String.concat Environment.NewLine locations)
+    Logging.logf "Probing locations:"
+    locations |> Seq.iter (fun x -> Logging.logf "    %s" x)
     locations
 
 /// Given an assembly name, try to find it in either assemblies

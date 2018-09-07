@@ -20,6 +20,8 @@ type public RProvider(cfg:TypeProviderConfig) as this =
         else Assembly.LoadFrom cfg.RuntimeAssembly
 
     static do 
+      Logging.logf "CommandLine: %s" Environment.CommandLine
+
       // When RProvider is installed via NuGet, the RDotNet assembly and plugins
       // will appear typically in "../../*/lib/net40". To support this, we look at
       // RProvider.dll.config which has this pattern in custom key "ProbingLocations".
