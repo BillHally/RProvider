@@ -22,6 +22,7 @@
   </metadata>
   <files>
     <file src="..\bin\RProvider.Server.exe" target="lib\net40" />
+    <file src="..\bin\RProvider.Server.exe.config" target="lib\net40" />
     <file src="..\bin\RProvider.Server.pdb" target="lib\net40" />
     <file src="..\bin\RProvider.DesignTime.dll" target="lib\net40" />
     <file src="..\bin\RProvider.DesignTime.pdb" target="lib\net40" />

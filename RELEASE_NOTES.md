@@ -33,4 +33,4 @@
 * 1.1.18-alpha - Allow specifying of R path in .rprovider.conf (fix #165)
 * 1.1.19-alpha - Fix FSharp.Core.dll included in the package
 * 1.1.20 - Cross-platform improvements
-* 1.1.21-previewfix199-18 - Fix SDK-style projects and DynamicInterop package which targets netstandard
+* 1.1.21-previewfix199-19 - Fix SDK-style projects and DynamicInterop package which targets netstandard
