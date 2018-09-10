@@ -59,13 +59,26 @@ let startServer channelName tempFile =
 let main argv =
   try
     Logging.logf "Starting 'RProvider.Server' with arguments '%A'" argv
+    Logging.logf "   64-bit process: %A" Environment.Is64BitProcess
+    Logging.logf "Framework Version: %A" Environment.Version
 
     // When RProvider is installed via NuGet, the RDotNet assembly and plugins
     // will appear typically in "../../*/lib/net40". To support this, we look at
     // RProvider.dll.config which has this pattern in custom key "ProbingLocations".
     // Here, we resolve assemblies by looking into the specified search paths.
     AppDomain.CurrentDomain.add_AssemblyResolve(fun source args ->
+      Logging.logf "AssemblyResolve: %s (%s) requested: %s"
+        (if isNull args.RequestingAssembly then "[unknown]" else args.RequestingAssembly.Location)
+        (if isNull args.RequestingAssembly then "[unknown]" else args.RequestingAssembly.FullName)
+        args.Name
       resolveReferencedAssembly args.Name)
+
+    resolveReferencedAssembly "RDotNet, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null"        |> ignore
+    resolveReferencedAssembly "RDotNet.FSharp, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null" |> ignore
+
+    //AppDomain.CurrentDomain.add_FirstChanceException(fun source args ->
+    //    Logging.logf "First chance exception: %A" args.Exception
+    //    )
 
     // The first argument is the IPC channel to create; The second argument
     // is a temp file that we delete, once we setup the IPC channel to 
@@ -83,6 +96,11 @@ let main argv =
     EventLoop.startEventLoop()
     Logging.logf "Event loop finished, shutting down"
     0
-  with e -> 
-    Logging.logf "RProvider.Server' failed: %A" e
+  with
+  | ex ->
+    Logging.logf "RProvider.Server' failed: %A" ex
+    match ex with
+    | :? ReflectionTypeLoadException as ex ->
+      ex.LoaderExceptions |> Array.iter (fun x -> Logging.logf "%A" x)
+    | _ -> ()
     reraise()

@@ -75,7 +75,9 @@ let resolveReferencedAssembly (asmName:string) =
     System.AppDomain.CurrentDomain.GetAssemblies()
     |> Seq.tryFind (fun a -> AssemblyName.ReferenceMatchesDefinition(fullName, a.GetName()))
   match loadedAsm with
-  | Some asm -> asm
+  | Some asm ->
+      Logging.logf "Using already loaded: %s" asm.FullName
+      asm
   | None ->
 
     // Otherwise, search the probing locations for a DLL file
