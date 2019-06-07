@@ -560,3 +560,9 @@ type REnv(fileName:string) =
   member x.Keys = 
     let ls = RInterop.callFunc "base" "ls" (namedParams ["envir", box env]) [||]
     ls.GetValue<string[]>()  
+
+module RDotNet =
+  /// Call this before plugins are loaded to ensure that the correct version of RDotNet is loaded
+  let forceLoad () =
+    // Force RDotNet assembly to load by using some functionality from it (it doesn't matter what)
+    Logging.logf "Forced load of RDotNet by referencing '%A'" RDotNet.Internals.Windows.UiMode.LinkDll
