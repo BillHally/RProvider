@@ -27,6 +27,8 @@ type public RProvider(cfg:TypeProviderConfig) as this =
       AppDomain.CurrentDomain.add_AssemblyResolve(fun source args ->
         resolveReferencedAssembly args.Name)
       
+      RDotNet.forceLoad () // Ensure that the version of RDotNet we compiled against is the one loaded
+
     // Generate all the types and log potential errors
     let buildTypes () =
         try 
