@@ -113,6 +113,9 @@ module internal RInteropInternal =
                     yield upcast new AssemblyCatalog(assem) }
             new CompositionContainer(new AggregateCatalog(catalogs))
                 
+    let internal forceLoadPlugins () =
+        mefContainer.Force() |> ignore
+
     let internal toRConv = Collections.Generic.Dictionary<Type, REngine -> obj -> SymbolicExpression>()
 
     /// Register a function that will convert from a specific type to a value in R.
@@ -566,3 +569,4 @@ module RDotNet =
   let forceLoad () =
     // Force RDotNet assembly to load by using some functionality from it (it doesn't matter what)
     Logging.logf "Forced load of RDotNet by referencing '%A'" RDotNet.Internals.Windows.UiMode.LinkDll
+    RInteropInternal.forceLoadPlugins()
